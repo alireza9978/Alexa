@@ -1,14 +1,17 @@
 package me.coleo.mylib.AlexaLib;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
+import me.coleo.mylib.AlexaLib.exceptions.NullCreate;
 import me.coleo.mylib.AlexaLib.exceptions.NullField;
 import me.coleo.mylib.AlexaLib.exceptions.NullUniqueField;
 
@@ -68,44 +71,7 @@ public class AlexaFactory {
     }
 
     public JSONObject update(Object input) {
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
-        if (input == null) {
-            throw new InvalidInput("null input");
-        }
-
-        JSONObject output = new JSONObject();
-        for (Field field : input.getClass().getDeclaredFields()) {
-            try {
-                field.setAccessible(true);
-                Object value = field.get(input);
-                if (value == null) {
-                    throw new NullField(field.getName() + " is null");
-                } else {
-                    if (isWrapperType(value.getClass()))
-                        output.put(getName(field), value);
-                    else
-                        output.put(getName(field), updateInner(value));
-                }
-            } catch (IllegalAccessException | JSONException e) {
-                e.printStackTrace();
-            } catch (NullField nullField) {
-                Annotation[] annotations = field.getDeclaredAnnotations();
-                boolean unique = false, ignore = false;
-                for (Annotation annotation : annotations) {
-                    if (annotation instanceof Unique)
-                        unique = true;
-                    if (annotation instanceof Ignore)
-                        ignore = true;
-                }
-                if (unique && !ignore) {
-                    throw new NullUniqueField(field.getName() + " field is unique and null");
-                } else {
-                    nullField.printStackTrace();
-                }
-            }
-        }
+        JSONObject output = updateInner(input);
         JSONObject mainOut = new JSONObject();
         try {
             mainOut.put(getName(input.getClass()), output);
@@ -133,7 +99,13 @@ public class AlexaFactory {
                 } else {
                     if (isWrapperType(value.getClass()))
                         output.put(getName(field), value);
-                    else
+                    else if (value instanceof List<?>) {
+                        JSONArray jsonArray = new JSONArray();
+                        for (Object object : ((List<?>) value)) {
+                            jsonArray.put(update(object));
+                        }
+                        output.put(getName(field), jsonArray);
+                    } else
                         output.put(getName(field), updateInner(value));
                 }
             } catch (IllegalAccessException | JSONException e) {
@@ -154,6 +126,73 @@ public class AlexaFactory {
                 }
             }
         }
+        return output;
+    }
+
+    public JSONObject create(Object input) {
+        JSONObject output = createInner(input);
+        JSONObject mainOut = new JSONObject();
+        try {
+            mainOut.put(getName(input.getClass()), output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mainOut;
+    }
+
+    private JSONObject createInner(Object input) {
+        if (input instanceof Class<?>) {
+            throw new InvalidInput("invalid input object expected");
+        }
+        if (input == null) {
+            throw new InvalidInput("null input");
+        }
+
+        JSONObject output = new JSONObject();
+        for (Field field : input.getClass().getDeclaredFields()) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(input);
+                if (value == null) {
+                    throw new NullField(field.getName() + " is null");
+                } else {
+                    String name = this.getName(field);
+                    boolean unique = false, ignore = false;
+                    Annotation[] annotations = field.getDeclaredAnnotations();
+                    for (Annotation annotation : annotations) {
+                        if (annotation instanceof Unique) {
+                            unique = true;
+                        }
+                        if (annotation instanceof Ignore) {
+                            ignore = true;
+                        }
+                    }
+                    if (!unique && !ignore) {
+                        if (isWrapperType(value.getClass()))
+                            output.put(name, value);
+                        else
+                            output.put(name, updateInner(value));
+                    }
+                }
+            } catch (IllegalAccessException | JSONException e) {
+                e.printStackTrace();
+            } catch (NullField nullField) {
+                Annotation[] annotations = field.getDeclaredAnnotations();
+                boolean unique = false, ignore = false;
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof Unique)
+                        unique = true;
+                    if (annotation instanceof Ignore)
+                        ignore = true;
+                }
+                if (unique || ignore) {
+                    nullField.printStackTrace();
+                } else {
+                    throw new NullCreate(field.getName() + " field is null, can't create");
+                }
+            }
+        }
+
         return output;
     }
 

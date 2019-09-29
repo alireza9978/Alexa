@@ -16,8 +16,6 @@ public class Profile {
     private String name;
     private int score;
     private String inviteCode;
-    @Name(nameTo = "NeverMindAddress")
-    private Address address;
 
     public Profile(int id, String name) {
         this.id = id;
@@ -27,7 +25,6 @@ public class Profile {
     public Profile(int id, String name, Address address) {
         this.id = id;
         this.name = name;
-        this.address = address;
     }
 
     public Profile(int id, int score, String inviteCode) {

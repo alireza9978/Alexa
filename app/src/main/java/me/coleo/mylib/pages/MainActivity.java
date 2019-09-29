@@ -9,6 +9,7 @@ import me.coleo.mylib.AlexaLib.AlexaFactory;
 import me.coleo.mylib.R;
 import me.coleo.mylib.temp_models.Address;
 import me.coleo.mylib.temp_models.Profile;
+import me.coleo.mylib.temp_models.User;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,8 +24,13 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.temp_text_view);
         AlexaFactory alexa = new AlexaFactory();
 //        textView.setText(alexa.get(new Profile(12, 50, "COdeOFMe")).toString());
-        Profile profile = new Profile(12, "COdeOFMe", new Address(123.4124, 123.123));
-        textView.setText(alexa.update(profile).toString());
+        Profile profile = new Profile(12, "COdeOFMe");
+        User a = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
+        User b = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
+        User c = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
+        a.addFriend(b);
+        a.addFriend(c);
+        textView.setText(alexa.update(a).toString());
 
 //        Moshi moshi = new Moshi.Builder().build();
 //        JsonAdapter<History> jsonAdapter = moshi.adapter(History.class);
