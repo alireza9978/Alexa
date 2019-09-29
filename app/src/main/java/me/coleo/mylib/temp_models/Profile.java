@@ -1,8 +1,17 @@
 package me.coleo.mylib.temp_models;
 
+import me.coleo.mylib.AlexaLib.Name;
+import me.coleo.mylib.AlexaLib.Unique;
+
+@Name(nameTo = "fucking profile")
 public class Profile {
 
+    @Unique
+    @Name(nameTo = "myId")
     private int id;
+    @Unique
+    @Name(nameTo = "leave me")
+    private String name;
     private int score;
     private String inviteCode;
     private Address address;

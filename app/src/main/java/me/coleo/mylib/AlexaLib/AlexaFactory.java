@@ -1,11 +1,9 @@
 package me.coleo.mylib.AlexaLib;
 
-
-import com.squareup.moshi.Json;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
@@ -22,19 +20,61 @@ public class AlexaFactory {
         }
 
         JSONObject output = new JSONObject();
+//        Timber.e("field count = %d", input.getClass().getDeclaredFields().length);
         for (Field field : input.getClass().getDeclaredFields()) {
             try {
                 field.setAccessible(true);
                 Object value = field.get(input);
-                if (value == null){
+                if (value == null) {
                     Timber.e("null value");
+                } else {
+                    String name = this.getName(field);
+                    Annotation[] annotations = field.getDeclaredAnnotations();
+                    for (Annotation annotation : annotations) {
+                        if (annotation instanceof Unique) {
+                            output.put(name, value);
+                        }
+                    }
+//                    Timber.e("not unique field name = %s", value);
                 }
-                output.put(field.getName(),value);
             } catch (IllegalAccessException | JSONException e) {
                 e.printStackTrace();
             }
         }
-        return output;
+        JSONObject mainOut = new JSONObject();
+        try {
+            mainOut.put(getName(input.getClass()), output);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mainOut;
+    }
+
+
+    private String getName(Object object) {
+        if (object instanceof Field) {
+            Field field = ((Field) object);
+            Annotation[] annotations = field.getAnnotations();
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof Name) {
+                    Name temp = (Name) annotation;
+                    return temp.nameTo();
+                }
+            }
+            return ((Field) object).getName();
+        } else if (object instanceof Class<?>) {
+            Class aClass = ((Class) object);
+            Annotation[] annotations = aClass.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                if (annotation instanceof Name) {
+                    Name temp = (Name) annotation;
+                    return temp.nameTo();
+                }
+            }
+            return ((Class) object).getSimpleName();
+        } else {
+            throw new InvalidInput("not filed or class");
+        }
     }
 
 }

@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import me.coleo.mylib.AlexaLib.AlexaFactory;
 import me.coleo.mylib.R;
 import me.coleo.mylib.temp_models.Profile;
-import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -20,11 +19,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Timber.plant(new Timber.DebugTree());
-
         textView = findViewById(R.id.temp_text_view);
         AlexaFactory alexa = new AlexaFactory();
-        textView.setText(alexa.get(new Profile(12,50,"COdeOFMe")).toString());
+        textView.setText(alexa.get(new Profile(12, 50, "COdeOFMe")).toString());
 
 //        Moshi moshi = new Moshi.Builder().build();
 //        JsonAdapter<History> jsonAdapter = moshi.adapter(History.class);
