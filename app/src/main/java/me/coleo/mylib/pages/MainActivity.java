@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import me.coleo.mylib.AlexaLib.AlexaFactory;
 import me.coleo.mylib.R;
+import me.coleo.mylib.temp_models.Address;
 import me.coleo.mylib.temp_models.Profile;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,7 +22,9 @@ public class MainActivity extends AppCompatActivity {
 
         textView = findViewById(R.id.temp_text_view);
         AlexaFactory alexa = new AlexaFactory();
-        textView.setText(alexa.get(new Profile(12, 50, "COdeOFMe")).toString());
+//        textView.setText(alexa.get(new Profile(12, 50, "COdeOFMe")).toString());
+        Profile profile = new Profile(12, "COdeOFMe", new Address(123.4124, 123.123));
+        textView.setText(alexa.update(profile).toString());
 
 //        Moshi moshi = new Moshi.Builder().build();
 //        JsonAdapter<History> jsonAdapter = moshi.adapter(History.class);

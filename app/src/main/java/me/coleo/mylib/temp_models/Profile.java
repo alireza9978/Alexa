@@ -1,5 +1,6 @@
 package me.coleo.mylib.temp_models;
 
+import me.coleo.mylib.AlexaLib.Ignore;
 import me.coleo.mylib.AlexaLib.Name;
 import me.coleo.mylib.AlexaLib.Unique;
 
@@ -10,11 +11,24 @@ public class Profile {
     @Name(nameTo = "myId")
     private int id;
     @Unique
+    @Ignore
     @Name(nameTo = "leave me")
     private String name;
     private int score;
     private String inviteCode;
+    @Name(nameTo = "NeverMindAddress")
     private Address address;
+
+    public Profile(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Profile(int id, String name, Address address) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+    }
 
     public Profile(int id, int score, String inviteCode) {
         this.id = id;

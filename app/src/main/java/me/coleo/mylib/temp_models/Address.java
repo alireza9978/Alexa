@@ -4,10 +4,12 @@ public class Address {
 
     private double lat;
     private double lng;
+    private Card card;
 
     public Address(double lat, double lng) {
         this.lat = lat;
         this.lng = lng;
+        card = new Card(14);
     }
 
     public void setLat(double lat) {
