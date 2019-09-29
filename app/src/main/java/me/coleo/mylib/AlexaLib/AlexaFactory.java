@@ -7,7 +7,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
-import timber.log.Timber;
+import me.coleo.mylib.AlexaLib.exceptions.NullField;
+import me.coleo.mylib.AlexaLib.exceptions.NullUniqueField;
 
 public class AlexaFactory {
 
@@ -26,7 +27,7 @@ public class AlexaFactory {
                 field.setAccessible(true);
                 Object value = field.get(input);
                 if (value == null) {
-                    Timber.e("null value");
+                    throw new NullField(field.getName() + " is null");
                 } else {
                     String name = this.getName(field);
                     Annotation[] annotations = field.getDeclaredAnnotations();
@@ -39,6 +40,20 @@ public class AlexaFactory {
                 }
             } catch (IllegalAccessException | JSONException e) {
                 e.printStackTrace();
+            } catch (NullField nullField) {
+                Annotation[] annotations = field.getDeclaredAnnotations();
+                boolean unique = false, ignore = false;
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof Unique)
+                        unique = true;
+                    if (annotation instanceof Ignore)
+                        ignore = true;
+                }
+                if (unique && !ignore) {
+                    throw new NullUniqueField(field.getName() + " field is unique and null");
+                }else {
+                    nullField.printStackTrace();
+                }
             }
         }
         JSONObject mainOut = new JSONObject();
