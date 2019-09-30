@@ -6,6 +6,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import me.coleo.mylib.AlexaLib.AlexaFactory;
+import me.coleo.mylib.AlexaLib.Mode;
 import me.coleo.mylib.R;
 import me.coleo.mylib.temp_models.Address;
 import me.coleo.mylib.temp_models.Profile;
@@ -28,9 +29,11 @@ public class MainActivity extends AppCompatActivity {
         User a = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
         User b = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
         User c = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
+
         a.addFriend(b);
+        b.addFriend(a);
         a.addFriend(c);
-        textView.setText(alexa.update(a).toString());
+        textView.setText(alexa.invoke(a, Mode.Create).toString());
 
 //        Moshi moshi = new Moshi.Builder().build();
 //        JsonAdapter<History> jsonAdapter = moshi.adapter(History.class);

@@ -6,18 +6,55 @@ import org.json.JSONObject;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
+import me.coleo.mylib.AlexaLib.exceptions.NotListInput;
 import me.coleo.mylib.AlexaLib.exceptions.NullCreate;
 import me.coleo.mylib.AlexaLib.exceptions.NullField;
 import me.coleo.mylib.AlexaLib.exceptions.NullUniqueField;
+import timber.log.Timber;
 
 public class AlexaFactory {
 
-    public JSONObject get(Object input) {
+    private ArrayList<Class<?>> seen = new ArrayList<>();
+
+    public JSONObject invoke(Object input, Mode mode) {
+        if (input == null) {
+            throw new InvalidInput("null input");
+        }
+        if (mode == null) {
+            throw new InvalidInput("null Mode");
+        }
+
+        seen.clear();
+        JSONObject mainOut = new JSONObject();
+        try {
+            String name = getName(input.getClass());
+            switch (mode) {
+                case Get: {
+                    mainOut.put(name, getInner(input));
+                    break;
+                }
+                case Create: {
+                    mainOut.put(name, createInner(input, false));
+                    break;
+                }
+                case Update: {
+                    mainOut.put(name, updateInner(input, false));
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return mainOut;
+    }
+
+    private JSONObject getInner(Object input) {
         if (input instanceof Class<?>) {
             throw new InvalidInput("invalid input object expected");
         }
@@ -36,11 +73,15 @@ public class AlexaFactory {
                 } else {
                     String name = this.getName(field);
                     Annotation[] annotations = field.getDeclaredAnnotations();
-                    for (Annotation annotation : annotations) {
-                        if (annotation instanceof Unique) {
-                            output.put(name, value);
-                            continue fieldsLoop;
+                    if (isWrapperType(value.getClass())) {
+                        for (Annotation annotation : annotations) {
+                            if (annotation instanceof Unique) {
+                                output.put(name, value);
+                                continue fieldsLoop;
+                            }
                         }
+                    } else {
+                        Timber.e("not wrapper in get");
                     }
                 }
             } catch (IllegalAccessException | JSONException e) {
@@ -70,24 +111,19 @@ public class AlexaFactory {
         return mainOut;
     }
 
-    public JSONObject update(Object input) {
-        JSONObject output = updateInner(input);
-        JSONObject mainOut = new JSONObject();
-        try {
-            mainOut.put(getName(input.getClass()), output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return mainOut;
-    }
-
-    private JSONObject updateInner(Object input) {
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
+    private JSONObject updateInner(Object input, boolean checkRecursive) {
         if (input == null) {
             throw new InvalidInput("null input");
         }
+        if (input instanceof Class<?>) {
+            throw new InvalidInput("invalid input object expected");
+        }
+        if (checkRecursive)
+            if (seen.contains(input.getClass())) {
+                return new JSONObject();
+            } else {
+                seen.add(input.getClass());
+            }
 
         JSONObject output = new JSONObject();
         for (Field field : input.getClass().getDeclaredFields()) {
@@ -99,14 +135,13 @@ public class AlexaFactory {
                 } else {
                     if (isWrapperType(value.getClass()))
                         output.put(getName(field), value);
-                    else if (value instanceof List<?>) {
-                        JSONArray jsonArray = new JSONArray();
-                        for (Object object : ((List<?>) value)) {
-                            jsonArray.put(update(object));
+                    else {
+                        if (value instanceof List<?>) {
+                            output.put(getName(field), toArray(value, Mode.Update));
+                        } else {
+                            output.put(getName(field), updateInner(value, true));
                         }
-                        output.put(getName(field), jsonArray);
-                    } else
-                        output.put(getName(field), updateInner(value));
+                    }
                 }
             } catch (IllegalAccessException | JSONException e) {
                 e.printStackTrace();
@@ -126,27 +161,23 @@ public class AlexaFactory {
                 }
             }
         }
+        seen.remove(input.getClass());
         return output;
     }
 
-    public JSONObject create(Object input) {
-        JSONObject output = createInner(input);
-        JSONObject mainOut = new JSONObject();
-        try {
-            mainOut.put(getName(input.getClass()), output);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return mainOut;
-    }
-
-    private JSONObject createInner(Object input) {
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
+    private JSONObject createInner(Object input, boolean checkRecursive) {
         if (input == null) {
             throw new InvalidInput("null input");
         }
+        if (input instanceof Class<?>) {
+            throw new InvalidInput("invalid input object expected");
+        }
+        if (checkRecursive)
+            if (seen.contains(input.getClass())) {
+                return new JSONObject();
+            } else {
+                seen.add(input.getClass());
+            }
 
         JSONObject output = new JSONObject();
         for (Field field : input.getClass().getDeclaredFields()) {
@@ -162,16 +193,19 @@ public class AlexaFactory {
                     for (Annotation annotation : annotations) {
                         if (annotation instanceof Unique) {
                             unique = true;
-                        }
-                        if (annotation instanceof Ignore) {
+                        } else if (annotation instanceof Ignore) {
                             ignore = true;
                         }
                     }
                     if (!unique && !ignore) {
                         if (isWrapperType(value.getClass()))
                             output.put(name, value);
-                        else
-                            output.put(name, updateInner(value));
+                        else {
+                            if (value instanceof List<?>) {
+                                output.put(getName(field), toArray(value, Mode.Create));
+                            } else
+                                output.put(getName(field), createInner(value, true));
+                        }
                     }
                 }
             } catch (IllegalAccessException | JSONException e) {
@@ -192,7 +226,7 @@ public class AlexaFactory {
                 }
             }
         }
-
+        seen.remove(input.getClass());
         return output;
     }
 
@@ -241,6 +275,31 @@ public class AlexaFactory {
         ret.add(Double.class);
         ret.add(Void.class);
         return ret;
+    }
+
+    private JSONArray toArray(Object input, Mode mode) {
+        if (input == null) {
+            throw new InvalidInput("null input");
+        }
+        if (!(input instanceof List)) {
+            throw new NotListInput("invalid input List expected");
+        }
+
+        JSONArray output = new JSONArray();
+        for (Object object : ((List) input)) {
+            switch (mode) {
+                case Create:
+                    output.put(createInner(object, true));
+                    break;
+                case Update:
+                    output.put(updateInner(object, true));
+                    break;
+                case Get:
+                    output.put(getInner(object));
+                    break;
+            }
+        }
+        return output;
     }
 
 }
