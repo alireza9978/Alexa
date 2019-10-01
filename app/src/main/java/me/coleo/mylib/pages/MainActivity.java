@@ -25,11 +25,10 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.temp_text_view);
         AlexaFactory alexa = new AlexaFactory();
 //        textView.setText(alexa.get(new Profile(12, 50, "COdeOFMe")).toString());
-        Profile profile = new Profile(12, "COdeOFMe");
+        Profile profile = new Profile(12, "COdeOFMe",120,"InviteMe");
         User a = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
         User b = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
         User c = new User(12, "Alireza", "Rahimi", new Address(123.412, 123.321), profile);
-
         a.addFriend(b);
         b.addFriend(a);
         a.addFriend(c);

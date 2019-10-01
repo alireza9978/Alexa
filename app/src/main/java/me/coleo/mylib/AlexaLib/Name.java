@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Name {
 
-    public String nameTo();
+    String nameTo();
 
 }

@@ -9,8 +9,11 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 
+import me.coleo.mylib.AlexaLib.exceptions.FailedGet;
 import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
 import me.coleo.mylib.AlexaLib.exceptions.NotListInput;
 import me.coleo.mylib.AlexaLib.exceptions.NullCreate;
@@ -62,6 +65,7 @@ public class AlexaFactory {
             throw new InvalidInput("null input");
         }
 
+        boolean validOutput = false;
         JSONObject output = new JSONObject();
         fieldsLoop:
         for (Field field : input.getClass().getDeclaredFields()) {
@@ -76,6 +80,7 @@ public class AlexaFactory {
                     if (isWrapperType(value.getClass())) {
                         for (Annotation annotation : annotations) {
                             if (annotation instanceof Unique) {
+                                validOutput = true;
                                 output.put(name, value);
                                 continue fieldsLoop;
                             }
@@ -102,6 +107,8 @@ public class AlexaFactory {
                 }
             }
         }
+        if (!validOutput)
+            throw new FailedGet("valid unique field not fount!");
         JSONObject mainOut = new JSONObject();
         try {
             mainOut.put(getName(input.getClass()), output);
@@ -136,7 +143,7 @@ public class AlexaFactory {
                     if (isWrapperType(value.getClass()))
                         output.put(getName(field), value);
                     else {
-                        if (value instanceof List<?>) {
+                        if (isArrayType(value.getClass())) {
                             output.put(getName(field), toArray(value, Mode.Update));
                         } else {
                             output.put(getName(field), updateInner(value, true));
@@ -201,7 +208,7 @@ public class AlexaFactory {
                         if (isWrapperType(value.getClass()))
                             output.put(name, value);
                         else {
-                            if (value instanceof List<?>) {
+                            if (isArrayType(value.getClass())) {
                                 output.put(getName(field), toArray(value, Mode.Create));
                             } else
                                 output.put(getName(field), createInner(value, true));
@@ -288,18 +295,30 @@ public class AlexaFactory {
         JSONArray output = new JSONArray();
         for (Object object : ((List) input)) {
             switch (mode) {
+                case Get:
                 case Create:
-                    output.put(createInner(object, true));
+                    output.put(getInner(object));
                     break;
                 case Update:
                     output.put(updateInner(object, true));
-                    break;
-                case Get:
-                    output.put(getInner(object));
                     break;
             }
         }
         return output;
     }
 
+    private static final Set<Class<?>> ARRAY_TYPES = getArrayTypes();
+
+    private static boolean isArrayType(Class<?> clazz) {
+        return ARRAY_TYPES.contains(clazz);
+    }
+
+    private static Set<Class<?>> getArrayTypes() {
+        Set<Class<?>> ret = new HashSet<>();
+        ret.add(List.class);
+        ret.add(ArrayList.class);
+        ret.add(Stack.class);
+        ret.add(Queue.class);
+        return ret;
+    }
 }

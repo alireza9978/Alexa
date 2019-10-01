@@ -17,6 +17,13 @@ public class Profile {
     private int score;
     private String inviteCode;
 
+    public Profile(int id, String name, int score, String inviteCode) {
+        this.id = id;
+        this.name = name;
+        this.score = score;
+        this.inviteCode = inviteCode;
+    }
+
     public Profile(int id, String name) {
         this.id = id;
         this.name = name;
