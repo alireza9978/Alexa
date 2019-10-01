@@ -1,4 +1,4 @@
-package me.coleo.mylib.AlexaLib;
+package ir.coleo.alexa.AlexaLib;
 
 public enum Mode {
 

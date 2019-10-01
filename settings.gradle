@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':alexa'
 rootProject.name='My Lib'

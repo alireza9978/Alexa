@@ -1,4 +1,6 @@
-package me.coleo.mylib.AlexaLib;
+package ir.coleo.alexa.AlexaLib;
+
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,15 +15,16 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import me.coleo.mylib.AlexaLib.exceptions.FailedGet;
-import me.coleo.mylib.AlexaLib.exceptions.InvalidInput;
-import me.coleo.mylib.AlexaLib.exceptions.NotListInput;
-import me.coleo.mylib.AlexaLib.exceptions.NullCreate;
-import me.coleo.mylib.AlexaLib.exceptions.NullField;
-import me.coleo.mylib.AlexaLib.exceptions.NullUniqueField;
-import timber.log.Timber;
+import ir.coleo.alexa.AlexaLib.exceptions.FailedGet;
+import ir.coleo.alexa.AlexaLib.exceptions.InvalidInput;
+import ir.coleo.alexa.AlexaLib.exceptions.NotListInput;
+import ir.coleo.alexa.AlexaLib.exceptions.NullCreate;
+import ir.coleo.alexa.AlexaLib.exceptions.NullField;
+import ir.coleo.alexa.AlexaLib.exceptions.NullUniqueField;
 
 public class AlexaFactory {
+
+    private static String TAG = "ALEXA_FACTORY";
 
     private ArrayList<Class<?>> seen = new ArrayList<>();
 
@@ -86,7 +89,7 @@ public class AlexaFactory {
                             }
                         }
                     } else {
-                        Timber.e("not wrapper in get");
+                        Log.i(TAG, "getInner: not wrapper in get ");
                     }
                 }
             } catch (IllegalAccessException | JSONException e) {
