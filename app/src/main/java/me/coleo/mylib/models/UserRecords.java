@@ -1,8 +1,10 @@
-package me.coleo.mylib.temp_models;
+package me.coleo.mylib.models;
 
 import com.squareup.moshi.Json;
 
 import java.util.List;
+
+import me.coleo.mylib.models.my_pack.History;
 
 public class UserRecords {
 

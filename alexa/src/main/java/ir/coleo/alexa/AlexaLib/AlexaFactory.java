@@ -22,6 +22,8 @@ import ir.coleo.alexa.AlexaLib.exceptions.NullCreate;
 import ir.coleo.alexa.AlexaLib.exceptions.NullField;
 import ir.coleo.alexa.AlexaLib.exceptions.NullUniqueField;
 
+import static ir.coleo.alexa.AlexaLib.validators.Validator.isValid;
+
 public class AlexaFactory {
 
     private static String TAG = "ALEXA_FACTORY";
@@ -29,12 +31,7 @@ public class AlexaFactory {
     private ArrayList<Class<?>> seen = new ArrayList<>();
 
     public JSONObject invoke(Object input, Mode mode) {
-        if (input == null) {
-            throw new InvalidInput("null input");
-        }
-        if (mode == null) {
-            throw new InvalidInput("null Mode");
-        }
+        isValid(mode, input);
 
         seen.clear();
         JSONObject mainOut = new JSONObject();
@@ -61,12 +58,7 @@ public class AlexaFactory {
     }
 
     private JSONObject getInner(Object input) {
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
-        if (input == null) {
-            throw new InvalidInput("null input");
-        }
+        isValid(input);
 
         boolean validOutput = false;
         JSONObject output = new JSONObject();
@@ -122,12 +114,7 @@ public class AlexaFactory {
     }
 
     private JSONObject updateInner(Object input, boolean checkRecursive) {
-        if (input == null) {
-            throw new InvalidInput("null input");
-        }
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
+        isValid(input);
         if (checkRecursive)
             if (seen.contains(input.getClass())) {
                 return new JSONObject();
@@ -176,12 +163,7 @@ public class AlexaFactory {
     }
 
     private JSONObject createInner(Object input, boolean checkRecursive) {
-        if (input == null) {
-            throw new InvalidInput("null input");
-        }
-        if (input instanceof Class<?>) {
-            throw new InvalidInput("invalid input object expected");
-        }
+        isValid(input);
         if (checkRecursive)
             if (seen.contains(input.getClass())) {
                 return new JSONObject();

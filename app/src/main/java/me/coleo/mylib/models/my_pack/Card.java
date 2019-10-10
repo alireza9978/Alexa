@@ -1,4 +1,4 @@
-package me.coleo.mylib.temp_models;
+package me.coleo.mylib.models.my_pack;
 
 public class Card {
 

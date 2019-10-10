@@ -1,7 +1,9 @@
-package me.coleo.mylib.temp_models;
+package me.coleo.mylib.models.my_pack;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import me.coleo.mylib.models.Profile;
 
 public class User {
 

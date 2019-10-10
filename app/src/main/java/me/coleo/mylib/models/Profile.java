@@ -1,8 +1,9 @@
-package me.coleo.mylib.temp_models;
+package me.coleo.mylib.models;
 
 import ir.coleo.alexa.AlexaLib.Ignore;
 import ir.coleo.alexa.AlexaLib.Name;
 import ir.coleo.alexa.AlexaLib.Unique;
+import me.coleo.mylib.models.my_pack.Address;
 
 @Name(nameTo = "fucking profile")
 public class Profile {

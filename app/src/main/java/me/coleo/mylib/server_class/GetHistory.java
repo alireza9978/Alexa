@@ -1,11 +1,7 @@
 package me.coleo.mylib.server_class;
 
-import java.util.List;
-
-import me.coleo.mylib.temp_models.History;
-import me.coleo.mylib.temp_models.UserRecords;
+import me.coleo.mylib.models.UserRecords;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Headers;
